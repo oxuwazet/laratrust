@@ -185,6 +185,10 @@ class LaratrustServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../migrations/' => database_path('migrations')
             ], 'migrations');
+
+            $this->publishes([
+                __DIR__ . '/../stubs/setup_laratrust_teams_tables.php.stub' => database_path('migrations')
+            ], 'setup_laratrust_teams');
         }
     }
 
