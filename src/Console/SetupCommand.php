@@ -19,7 +19,7 @@ class SetupCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Setup migration and models for Laratrust';
+    protected $description = 'Setup models for Laratrust';
 
     /**
      * Commands to call with their description.
@@ -27,7 +27,6 @@ class SetupCommand extends Command
      * @var array
      */
     protected $calls = [
-        'laratrust:migration' => 'Creating migration',
         'laratrust:role' => 'Creating Role model',
         'laratrust:permission' => 'Creating Permission model',
         'laratrust:add-trait' => 'Adding LaratrustUserTrait to User model'
