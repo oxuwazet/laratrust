@@ -26,8 +26,19 @@ class LaratrustServiceProvider extends ServiceProvider
         $this->registerMiddlewares();
         $this->registerBladeDirectives();
         $this->registerRoutes();
+        $this->loadMigrations();
         $this->registerResources();
         $this->defineAssetPublishing();
+    }
+
+    /**
+     * Load the laratrust migrations.
+     *
+     * @return void
+     */
+    public function loadMigrations()
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../migrations');
     }
 
     /**
@@ -170,6 +181,10 @@ class LaratrustServiceProvider extends ServiceProvider
                 __DIR__.'/../config/laratrust.php' => config_path('laratrust.php'),
                 __DIR__. '/../config/laratrust_seeder.php' => config_path('laratrust_seeder.php'),
             ], 'laratrust');
+
+            $this->publishes([
+                __DIR__ . '/../migrations/' => database_path('migrations')
+            ], 'migrations');
         }
     }
 
@@ -201,7 +216,6 @@ class LaratrustServiceProvider extends ServiceProvider
                 Console\MakeRoleCommand::class,
                 Console\MakeSeederCommand::class,
                 Console\MakeTeamCommand::class,
-                Console\MigrationCommand::class,
                 Console\SetupCommand::class,
                 Console\SetupTeamsCommand::class,
                 Console\UpgradeCommand::class,
