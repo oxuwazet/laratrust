@@ -121,7 +121,7 @@ class LaratrustSetupTables extends Migration
         });
 
         // Create table for associating permissions to roles (Many-to-Many)
-        Schema::create(config('laratrust.tables.permissions', 'permission_role'), function (Blueprint $table) {
+        Schema::create(config('laratrust.tables.permission_role', 'permission_role'), function (Blueprint $table) {
             $table->unsignedInteger(config('laratrust.foreign_keys.permission', 'permission_id'));
             $table->unsignedInteger(config('laratrust.foreign_keys.role', 'role_id'));
 
@@ -151,7 +151,7 @@ class LaratrustSetupTables extends Migration
     public function down()
     {
         Schema::dropIfExists(config('laratrust.tables.permission_user', 'permission_user'));
-        Schema::dropIfExists(config('laratrust.tables.permissions', 'permission_role'));
+        Schema::dropIfExists(config('laratrust.tables.permission_role', 'permission_role'));
         Schema::dropIfExists(config('laratrust.tables.permissions', 'permissions'));
         Schema::dropIfExists(config('laratrust.tables.role_user', 'role_user'));
         Schema::dropIfExists(config('laratrust.tables.roles', 'roles'));
