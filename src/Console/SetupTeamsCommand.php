@@ -84,21 +84,10 @@ class SetupTeamsCommand extends Command
      */
     protected function createMigration()
     {
-        $migrationPath = $this->getMigrationPath();
-
-        $this->call('view:clear');
-        $output = $this->laravel->view
-            ->make('laratrust::setup-teams')
-            ->with(['laratrust' => Config::get('laratrust')])
-            ->render();
-
-        if (!file_exists($migrationPath) && $fs = fopen($migrationPath, 'x')) {
-            fwrite($fs, $output);
-            fclose($fs);
-            return true;
-        }
-
-        return false;
+         return $this->call('vendor:publish ', [
+            '--provider' => '\Laratrust\LaratrustServiceProvider.php',
+            '--tag'      => 'setup_laratrust_teams'
+        ]);
     }
 
     /**
