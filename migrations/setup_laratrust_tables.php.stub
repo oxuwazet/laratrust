@@ -1,0 +1,163 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class LaratrustSetupTables extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        // Create table for storing roles
+        Schema::create(config('laratrust.tables.roles', 'roles'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->timestamps();
+        });
+
+        // Create table for storing permissions
+        Schema::create(config('laratrust.tables.permissions', 'permissions'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->timestamps();
+        });
+
+        if (config('laratrust.teams.enabled', false)) {
+
+            // Create table for storing teams
+            Schema::create(config('laratrust.tables.teams', 'teams'), function (Blueprint $table) {
+                $table->increments('id');
+                $table->string('name')->unique();
+                $table->string('display_name')->nullable();
+                $table->string('description')->nullable();
+                $table->timestamps();
+            });
+
+        }
+
+        // Create table for associating roles to users and teams (Many To Many Polymorphic)
+        Schema::create(config('laratrust.tables.role_user', 'role_user'), function (Blueprint $table) {
+            $table->unsignedInteger(config('laratrust.foreign_keys.role', 'role_id'));
+            $table->unsignedInteger(config('laratrust.foreign_keys.user', 'user_id'));
+            $table->string('user_type');
+
+            if (config('laratrust.teams.enabled', false)) {
+                $table->unsignedInteger(config('laratrust.foreign_keys.team', 'team_id'))->nullable();
+            }
+
+            $table->foreign(config('laratrust.foreign_keys.role', 'role_id'))
+                ->references('id')
+                ->on(config('laratrust.tables.roles', 'roles'))
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+
+            if (config('laratrust.teams.enabled', false)) {
+                $table->foreign(config('laratrust.foreign_keys.team', 'team_id'))
+                    ->references('id')
+                    ->on(config('laratrust.tables.teams', 'teams'))
+                    ->onUpdate('cascade')
+                    ->onDelete('cascade');
+
+                $table->unique([
+                    config('laratrust.foreign_keys.user', 'user_id'),
+                    config('laratrust.foreign_keys.role', 'role_id'),
+                    'user_type',
+                    config('laratrust.foreign_keys.team', 'team_id')
+                ]);
+            } else {
+                $table->primary([
+                    config('laratrust.foreign_keys.user', 'user_id'),
+                    config('laratrust.foreign_keys.role', 'role_id'),
+                    'user_type'
+                ]);
+            }
+        });
+
+        // Create table for associating permissions to users (Many To Many Polymorphic)
+        Schema::create(config('laratrust.tables.permission_user', 'permission_user'), function (Blueprint $table) {
+            $table->unsignedInteger(config('laratrust.foreign_keys.permission', 'permission_id'));
+            $table->unsignedInteger(config('laratrust.foreign_keys.user', 'user_id'));
+            $table->string('user_type');
+
+            if (config('laratrust.teams.enabled', false)) {
+                $table->unsignedInteger(config('laratrust.foreign_keys.team', 'team_id'))->nullable();
+            }
+
+            $table->foreign(config('laratrust.foreign_keys.permission', 'permission_id'))
+                ->references('id')
+                ->on(config('laratrust.tables.permissions', 'permissions'))
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+
+            if (config('laratrust.teams.enabled', false)) {
+                $table->foreign(config('laratrust.foreign_keys.team', 'team_id'))
+                    ->references('id')
+                    ->on(config('laratrust.tables.teams', 'teams'))
+                    ->onUpdate('cascade')
+                    ->onDelete('cascade');
+
+                $table->unique([
+                    config('laratrust.foreign_keys.user', 'user_id'),
+                    config('laratrust.foreign_keys.permission', 'permission_id'),
+                    'user_type',
+                    config('laratrust.foreign_keys.team', 'team_id')
+                ]);
+            } else {
+                $table->primary([
+                    config('laratrust.foreign_keys.user', 'user_id'),
+                    config('laratrust.foreign_keys.permission', 'permission_id'),
+                    'user_type'
+                ]);
+            }
+        });
+
+        // Create table for associating permissions to roles (Many-to-Many)
+        Schema::create(config('laratrust.tables.permissions', 'permission_role'), function (Blueprint $table) {
+            $table->unsignedInteger(config('laratrust.foreign_keys.permission', 'permission_id'));
+            $table->unsignedInteger(config('laratrust.foreign_keys.role', 'role_id'));
+
+            $table->foreign(config('laratrust.foreign_keys.permission', 'permission_id'))
+                ->references('id')
+                ->on(config('laratrust.tables.permissions', 'permissions'))
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+            $table->foreign(config('laratrust.foreign_keys.role', 'role_id'))
+                ->references('id')
+                ->on(config('laratrust.tables.roles', 'roles'))
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+
+            $table->primary([
+                config('laratrust.foreign_keys.permission', 'permission_id'),
+                config('laratrust.foreign_keys.role', 'role_id')
+            ]);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists(config('laratrust.tables.permission_user', 'permission_user'));
+        Schema::dropIfExists(config('laratrust.tables.permissions', 'permission_role'));
+        Schema::dropIfExists(config('laratrust.tables.permissions', 'permissions'));
+        Schema::dropIfExists(config('laratrust.tables.role_user', 'role_user'));
+        Schema::dropIfExists(config('laratrust.tables.roles', 'roles'));
+
+        if (config('laratrust.teams.enabled', false)) {
+            Schema::dropIfExists(config('laratrust.tables.teams', 'teams'));
+        }
+    }
+}
